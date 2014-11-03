@@ -1,0 +1,114 @@
+#!/bin/bash
+
+alias grep='grep --color'
+alias ls='ls --color -F'
+
+alias color='vim -c ":syntax on" -'
+
+function f () {
+	echo find $2 -iname "'*$1*'" >& 2
+	[ -z "$1" ] && echo '(!! use find)' && return 1;
+	find $2 \( -name '.bzr' -or -name '.git' -or -name '.svn' -prune \) -or \( -iname "*$1*" -print \);
+}
+
+function g () {
+	local exclude_vcs='--exclude-dir=.svn --exclude-dir=.git'
+	local exclude_history='--exclude-dir=.history --exclude-dir=.metadata'
+	[ -z "$1" ] && echo '(!! use grep)' && return 1;
+	grep --color=always --line-number --devices=skip ${exclude_vcs} ${exclude_history} -i -r "$1" ${2:-.}
+}
+
+function h () {
+	[ -z "$1" ] && echo 'echo h WORD' && return 1;
+	while read line; do
+		if [[ "$line" =~ "$1" ]]; then
+			echo $line | grep --color "$1"
+		else
+			echo $line
+		fi
+	done
+}
+
+function xmlgrep () {
+	[ -z "$1" -o -z "$2" ] && echo 'xmlgrep XPATH FILE' && return 1;
+	local exp="$1"; shift
+	xmlstarlet sel --root --noblanks -t --copy-of "$exp" "$@" | xmlstarlet fo --indent-tab
+}
+
+function spell () {
+	[ -z "$1" ] && echo 'spell WORD' && return 1;
+	echo "$1" | aspell -a | tail -n +2 | head -n +1 | sed -e 's/:/:\n\t/'
+}
+
+function pdfselect () {
+	[ -z "$1" ] && echo 'pdfselect FIRSTPAGE-LASTPAGE INPUT OUTPUT' && return 1
+
+	local range="$1"
+	local input="$2"
+	local output="$3"
+
+	pdftk "A=$input" cat "A$range" output "$output"
+}
+
+function jpegrotate () {
+	local usage='jpegrotate 90|180|270 INPUT (rotates ↻)'
+
+	[ -z "$1" ] && echo "$usage" && return 1
+	[ "$1" != "90" ] && [ "$1" != "180" ] && [ "$1" != "270" ] &&
+	  echo "$usage" && return 1
+
+	local degrees="$1"
+	local input="$2"
+
+	local degree_opt=''
+	if [ "$degrees" == '90' ]; then
+		degree_opt='-9'
+	elif [ "$degrees" == '180' ]; then
+		degree_opt='-1'
+	elif [ "$degrees" == '270' ]; then
+		degree_opt='-2'
+	fi
+
+	local opts=''
+	opts="$opts -i" # in place
+	opts="$opts -p" # preserve
+	opts="$opts -b" # backup
+	opts="$opts -g" # regenerate thumbnails
+
+	exiftran ${degree_opt} $opts "$input"
+}
+
+function untar {
+	if [[ "$1" =~ ".tar.gz" ]]; then
+		comp='z'
+	elif [[ "$1" =~ ".tar.bz2" ]]; then
+		comp='j'
+	fi
+	opts="-${comp}xvf"
+	tar $opts "$1"
+}
+
+function git_sync_hooks {
+	[[ ! -d '.git/hooks' ]] && echo "$PWD is not git-managed" && return 1
+
+	local template_dir="$HOME/Projects/git-dir-template/"
+
+	rsync --delete --progress -a "${template_dir}/hooks/" '.git/hooks/'
+}
+
+function defrag {
+	[ -z "$1" -o -z "$2" -o $# -gt 2 ] && echo 'defrag SOURCE DEST-DIR' && return 1 ;
+
+	[ ! -d "$2" ] && echo "ERROR: destination '$2' is not a directory" && return 1 ;
+
+	tempdir="$2/defrag-$RANDOM"
+
+	echo -n "Defragging '$1' to '$2' using '$tempdir' (Enter = OK, CTRL-C stop)..." ; read
+
+	mkdir "$tempdir"
+
+	(tar -c "$1") | ( cd "$tempdir" && tar -xvB)
+
+	mv "$tempdir"/* "$2"
+	rmdir "$tempdir"
+}

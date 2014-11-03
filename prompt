@@ -1,0 +1,98 @@
+#!/bin/bash
+
+PS1_COLOR_RED='\e[1;31m'    # tput setaf1 ; tput bold
+PS1_COLOR_STANDOUT='\e[7m'  # tput smso
+PS1_COLOR_NONE='\e[0m'      # tput sgr0
+
+function branch_info {
+	[[ "`pwd`" == */Remote* ]] && return
+
+	git status -z --untracked-files=no > /dev/null 2>&1
+	[ $? -eq 128 ] && return
+
+	local git_root="$(git rev-parse --show-toplevel)"
+	local show_status=$(git check-attr show_in_prompt -- "$git_root/.gitignore")
+	local show_pattern='/\.gitignore: show_in_prompt: (.*)$'
+
+	# add the following line to .gitattributes
+	#
+	#     /.gitignore show_in_prompt=no
+	local show_in_prompt='yes'
+	if [[ ${show_status} =~ ${show_pattern} ]]; then
+		show_in_prompt="${BASH_REMATCH[1]}"
+	fi
+
+	local git_ps1=$(__git_ps1 '%s')
+
+	local out_of_sync_pattern=' u(\+|\-).*$'
+	local out_of_sync=false
+	if [[ $git_ps1 =~ ${out_of_sync_pattern} ]]; then
+		out_of_sync=true
+	fi
+
+	local modified_pattern=' (\*|\+)+( |$)'
+	local modified=false
+	if [[ $git_ps1 =~ ${modified_pattern} ]]; then
+		modified=true
+	fi
+
+	if [ "${show_in_prompt}" == 'no' ] && ! ${out_of_sync} && ! ${modified} ; then
+		return
+	fi
+
+	if ${out_of_sync} ; then
+		git_ps1="${PS1_COLOR_RED}${git_ps1}${PS1_COLOR_NONE}"
+	fi
+	echo -e " [${git_ps1}]"
+}
+
+function rbenv_info {
+	type rbenv > /dev/null 2>&1 || return
+
+	echo " (ruby $(rbenv version | cut -d ' ' -f 1))"
+}
+
+function annex_info {
+	git config --get annex.uuid > /dev/null 2>&1 || return
+
+	local annex_ps1="annex"
+
+	if ! test -v GIT_ANNEX_LD_LIBRARY_PATH ; then
+		annex_ps1="$annex_ps1 [${PS1_COLOR_RED}no-sh${PS1_COLOR_NONE}]"
+	fi
+
+	local num_changes=$(git -c core.bare=false status --porcelain | grep -v '^ T ' | wc -l)
+	if [ "$num_changes" -ne 0 ] ; then
+		annex_ps1="$annex_ps1 [${PS1_COLOR_RED}${num_changes} changes${PS1_COLOR_NONE}]"
+	fi
+
+	echo -e " {$annex_ps1}"
+}
+
+function ssh_warning {
+	test -v SSH_CLIENT && echo " (ssh)"
+}
+
+function setup_prompt {
+	last_err_code=$?
+
+	PS1='\u@\h:\w'
+	PS1+="$(branch_info)"
+	PS1+="$(rbenv_info)"
+	PS1+="$(annex_info)"
+	PS1+="$(ssh_warning)"
+
+	if [ "$last_err_code" -ne 0 ] ; then
+		PS1+=" (errcode: ${PS1_COLOR_STANDOUT}${last_err_code}${PS1_COLOR_NONE})"
+	fi
+
+	local max_length=30
+	local local_pwd=${PWD##$HOME}
+	if [ $(( ${#PS1} + ${#local_pwd} )) -gt ${max_length} ] ; then
+		PS1+="$(echo -e "\n\xE2\x80\x8B")" #\u200B
+	fi
+
+	PS1+='\$ '
+}
+
+PROMPT_COMMAND=setup_prompt

@@ -1,0 +1,7 @@
+shopt -s histappend
+shopt -s histreedit
+shopt -s histverify
+
+HISTIGNORE='rm *'
+HISTSIZE=10000
+HISTFILESIZE=10000
