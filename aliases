@@ -112,3 +112,7 @@ function defrag {
 	mv "$tempdir"/* "$2"
 	rmdir "$tempdir"
 }
+
+function hex {
+	hexdump -v -e '/1 "%02X\n"'
+}
