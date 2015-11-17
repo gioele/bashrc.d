@@ -1,0 +1,24 @@
+#!/bin/bash
+
+if [ -f "$(dirname ${BASH_SOURCE[0]})/colors.hosts" ] ; then
+	. "$(dirname ${BASH_SOURCE[0]})/colors.hosts"
+fi
+
+function ps1_host_color {
+	local color
+	local ps1_color
+
+	if $(declare -f -F "host_color" > /dev/null) ; then
+		color=$(host_color)
+	fi
+
+	if [ -n "$color" ] ; then
+		ps1_color=$(tput setab $color)
+	else
+		ps1_color=$(tput sgr0)
+	fi
+
+	echo $ps1_color
+}
+
+PS1_HOST_COLOR=$(ps1_host_color)

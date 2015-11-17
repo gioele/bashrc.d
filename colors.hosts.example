@@ -1,0 +1,13 @@
+#!/bin/bash
+
+function host_color {
+	local color
+
+	case "$HOSTNAME" in
+		arduino) color=4 ;;
+		laptop) color=1 ;;
+		*.edu) color=6 ;;
+	esac
+
+	echo $color
+}

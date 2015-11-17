@@ -70,7 +70,7 @@ function annex_info {
 }
 
 function ssh_warning {
-	test -v SSH_CLIENT && echo " (ssh)"
+	test -v SSH_CLIENT && echo " (${PS1_HOST_COLOR}ssh${PS1_COLOR_NONE})"
 }
 
 function setup_prompt {
