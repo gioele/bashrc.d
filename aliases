@@ -2,6 +2,7 @@
 
 alias grep='grep --color'
 alias ls='ls --color -F'
+alias wdiff="wdiff -n -w $'\033[41m' -x $'\033[m\017' -y $'\033[42m' -z $'\033[m\017'"
 
 alias color='vim -c ":syntax on" -'
 
