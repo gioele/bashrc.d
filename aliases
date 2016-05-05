@@ -30,6 +30,11 @@ function h () {
 	done
 }
 
+function myip () {
+	curl 'http://ipecho.net/plain'
+	echo ''
+}
+
 function xmlgrep () {
 	[ -z "$1" -o -z "$2" ] && echo 'xmlgrep XPATH FILE' && return 1;
 	local exp="$1"; shift
