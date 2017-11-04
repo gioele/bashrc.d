@@ -19,6 +19,13 @@ function g () {
 	grep --color=always --line-number --devices=skip ${exclude_vcs} ${exclude_history} -i -r "$1" ${2:-.}
 }
 
+function gi () {
+	local exclude_vcs='--exclude-dir=.svn --exclude-dir=.git'
+	local exclude_history='--exclude-dir=.history --exclude-dir=.metadata'
+	[ -z "$1" ] && echo '(!! use grep)' && return 1;
+	grep --binary-files=without-match --color=always --line-number --devices=skip ${exclude_vcs} ${exclude_history} -i -r "$1" ${2:-.}
+}
+
 function h () {
 	[ -z "$1" ] && echo 'echo h WORD' && return 1;
 	while read line; do
