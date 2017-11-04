@@ -52,6 +52,12 @@ function rbenv_info {
 	echo " (ruby $(rbenv version | cut -d ' ' -f 1))"
 }
 
+function nodenv_info {
+	type nodenv > /dev/null 2>&1 || return
+
+	echo " (node $(nodenv version | cut -d ' ' -f 1))"
+}
+
 function annex_info {
 	git config --get annex.uuid > /dev/null 2>&1 || return
 
@@ -82,6 +88,7 @@ function setup_prompt {
 	PS1='\u@\h:\w'
 	PS1+="$(branch_info)"
 	PS1+="$(rbenv_info)"
+	PS1+="$(nodenv_info)"
 	PS1+="$(annex_info)"
 	PS1+="$(ssh_warning)"
 
