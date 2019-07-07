@@ -58,6 +58,12 @@ function nodenv_info {
 	echo " (node $(nodenv version | cut -d ' ' -f 1))"
 }
 
+function pyenv_info {
+	type pyenv > /dev/null 2>&1 || return
+
+	echo " (python $(pyenv version | cut -d ' ' -f 1))"
+}
+
 function annex_info {
 	git config --get annex.uuid > /dev/null 2>&1 || return
 
@@ -89,6 +95,7 @@ function setup_prompt {
 	PS1+="$(branch_info)"
 	PS1+="$(rbenv_info)"
 	PS1+="$(nodenv_info)"
+	PS1+="$(pyenv_info)"
 	PS1+="$(annex_info)"
 	PS1+="$(ssh_warning)"
 
