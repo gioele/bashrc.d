@@ -5,7 +5,7 @@ PS1_COLOR_STANDOUT='\e[7m'  # tput smso
 PS1_COLOR_NONE='\e[0m'      # tput sgr0
 
 function branch_info {
-	[[ "`pwd`" == */Remote* ]] && return
+	[[ "$PWD" == */Remote* ]] && return
 
 	git status -z --untracked-files=no > /dev/null 2>&1
 	[ $? -eq 128 ] && return
