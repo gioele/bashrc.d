@@ -7,8 +7,7 @@ PS1_COLOR_NONE='\e[0m'      # tput sgr0
 function branch_info {
 	[[ "$PWD" == */Remote* ]] && return
 
-	git status -z --untracked-files=no > /dev/null 2>&1
-	[ $? -eq 128 ] && return
+	git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return
 
 	local git_root="$(git rev-parse --show-toplevel)"
 	local show_status=$(git check-attr show_in_prompt -- "$git_root/.gitignore")
