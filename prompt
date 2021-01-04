@@ -75,7 +75,7 @@ function annex_info {
 	local git_dir="$(git -c repo.bare=false rev-parse --git-dir)"
 	local work_tree="${git_dir%.git}."
 
-	local num_changes=$(git --git-dir="$git_dir" --work-tree="$work_tree" -c core.bare=false status --porcelain | grep -v '^ T ' | wc -l)
+	local num_changes=$(git --git-dir="$git_dir" --work-tree="$work_tree" -c core.bare=false status --porcelain 2>/dev/null | grep -v '^ T ' | wc -l)
 	if [ "$num_changes" -ne 0 ] ; then
 		annex_ps1="$annex_ps1 [${PS1_COLOR_RED}${num_changes} changes${PS1_COLOR_NONE}]"
 	fi
